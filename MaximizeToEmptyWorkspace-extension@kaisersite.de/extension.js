@@ -59,6 +59,7 @@ class Extension {
         return -1;
     }
     
+    // bMap true - new windows to end of workspaces
     check(act,bMap) {
         // it doesn't matter if we have dynamic workspaces or not, so don't use this:
         //if (!this._mutterSettings.get_boolean('dynamic-workspaces')) 
@@ -202,7 +203,7 @@ class Extension {
     
     enable() {
         // Trigger new window with maximize size and if the window is maximized
-        _handles.push(global.window_manager.connect('map', (_, act) => {this.check(act,true);}));
+        _handles.push(global.window_manager.connect('map', (_, act) => {this.check(act,false);}));
         _handles.push(global.window_manager.connect('destroy', (_, act) => {this.backto(act);}));
         _handles.push(global.window_manager.connect('size-change', (_, act, change) => {
             if (change === Meta.SizeChange.MAXIMIZE)

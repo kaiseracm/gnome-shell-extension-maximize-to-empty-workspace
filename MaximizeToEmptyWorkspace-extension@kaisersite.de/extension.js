@@ -41,9 +41,9 @@ class Extension {
         return -1;
     }
     
-    // First free workspace on the specified monitor
+    // last occupied workspace on the specified monitor
     getLastOcupiedMonitor(manager,nCurrent,mMonitor) {
-        for (let i = nCurrent; i >= 0; i--) 
+        for (let i = nCurrent-1; i >= 0; i--) 
         {
             let win_count = manager.get_workspace_by_index(i).list_windows().filter(w => !w.is_always_on_all_workspaces() && w.get_monitor()==mMonitor).length;
             if (win_count > 0) 
@@ -147,9 +147,9 @@ class Extension {
                     }
                 }
             }
-        //log("wList "+ wList.length +" "+ text)
     }
 
+    // back to last workspace
     backto(act) {
         // it doesn't matter if we have dynamic workspaces or not, so don't use this:
         //if (!this._mutterSettings.get_boolean('dynamic-workspaces')) 
@@ -166,7 +166,6 @@ class Extension {
             {
             const manager = win.get_display().get_workspace_manager();
             const current = manager.get_active_workspace_index();
-            //log("wList current "+ current);
             if (this._mutterSettings.get_boolean('workspaces-only-on-primary'))
                 {
                 const mPrimary=win.get_display().get_primary_monitor();
@@ -198,7 +197,6 @@ class Extension {
                 wListlastoccupied.forEach( w => {w.change_workspace_by_index(lastocupied, false);});
                 }
             }
-        //log("wList destroy "+ wList.length);
     }
     
     enable() {
@@ -207,7 +205,13 @@ class Extension {
         _handles.push(global.window_manager.connect('destroy', (_, act) => {this.backto(act);}));
         _handles.push(global.window_manager.connect('size-change', (_, act, change) => {
             if (change === Meta.SizeChange.MAXIMIZE)
+                {
                 this.check(act,false);
+                }
+            else if (change === Meta.SizeChange.UNMAXIMIZE)
+                {
+                this.backto(act);
+                }
         }));
    }
 

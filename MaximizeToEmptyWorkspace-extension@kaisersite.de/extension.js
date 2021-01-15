@@ -60,14 +60,14 @@ class Extension {
     }
     
     // bMap true - new windows to end of workspaces
-    check(act,bMap) {
+    check(act,bMap,bFullscreen) {
         // it doesn't matter if we have dynamic workspaces or not, so don't use this:
         //if (!this._mutterSettings.get_boolean('dynamic-workspaces')) 
         //    return;
         const win = act.meta_window;
         if (win.window_type !== Meta.WindowType.NORMAL)
             return;
-        if (win.get_maximized() !== Meta.MaximizeFlags.BOTH)
+        if (win.get_maximized() !== Meta.MaximizeFlags.BOTH && !bFullscreen)
             return;
         if (win.is_always_on_all_workspaces())
             return;
@@ -201,15 +201,23 @@ class Extension {
     
     enable() {
         // Trigger new window with maximize size and if the window is maximized
-        _handles.push(global.window_manager.connect('map', (_, act) => {this.check(act,false);}));
+        _handles.push(global.window_manager.connect('map', (_, act) => {this.check(act,false,false);}));
         _handles.push(global.window_manager.connect('destroy', (_, act) => {this.backto(act);}));
         _handles.push(global.window_manager.connect('size-change', (_, act, change) => {
+            log("change "+ change);
             if (change === Meta.SizeChange.MAXIMIZE)
                 {
-                this.check(act,false);
+                log("MAXIMIZE");
+                this.check(act,false,false);
                 }
-            else if (change === Meta.SizeChange.UNMAXIMIZE)
+            else if (change  === Meta.SizeChange.FULLSCREEN)
                 {
+                log("MAXIMIZE");
+                this.check(act,false,true);
+                }
+            else if (change === Meta.SizeChange.UNMAXIMIZE || change === Meta.SizeChange.UNFULLSCREEN)
+                {
+                log("UNMAXIMIZE");
                 this.backto(act);
                 }
         }));

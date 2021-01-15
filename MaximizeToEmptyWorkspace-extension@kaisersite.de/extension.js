@@ -59,18 +59,9 @@ class Extension {
         return -1;
     }
     
-    // bMap true - new windows to end of workspaces
-    check(act,bMap,bFullscreen) {
-        // it doesn't matter if we have dynamic workspaces or not, so don't use this:
-        //if (!this._mutterSettings.get_boolean('dynamic-workspaces')) 
-        //    return;
-        const win = act.meta_window;
-        if (win.window_type !== Meta.WindowType.NORMAL)
-            return;
-        if (win.get_maximized() !== Meta.MaximizeFlags.BOTH && !bFullscreen)
-            return;
-        if (win.is_always_on_all_workspaces())
-            return;
+    placeOnWorkspace(win) {
+        // bMap true - new windows to end of workspaces
+        const bMap = false;
 
         // Idea: don't move the coresponding window to an other workspace (it may be not fully active yet)
         // Reorder the workspaces and move all other window
@@ -150,13 +141,8 @@ class Extension {
     }
 
     // back to last workspace
-    backto(act) {
-        // it doesn't matter if we have dynamic workspaces or not, so don't use this:
-        //if (!this._mutterSettings.get_boolean('dynamic-workspaces')) 
-        //    return;
-        const win = act.meta_window;
-        if (win.window_type !== Meta.WindowType.NORMAL)
-            return;
+    backto(win) {
+
         // Idea: don't move the coresponding window to an other workspace (it may be not fully active yet)
         // Reorder the workspaces and move all other window
 
@@ -199,29 +185,60 @@ class Extension {
             }
     }
     
+    window_manager_map(act)
+    {
+        const win = act.meta_window;
+        if (win.window_type !== Meta.WindowType.NORMAL)
+            return;
+        if (win.get_maximized() !== Meta.MaximizeFlags.BOTH)
+            return;
+        if (win.is_always_on_all_workspaces())
+            return;
+        this.placeOnWorkspace(win);
+    }
+    
+    window_manager_destroy(act)
+    {
+        const win = act.meta_window;
+        if (win.window_type !== Meta.WindowType.NORMAL)
+            return;
+        this.backto(win);
+    }
+
+    window_manager_size_change(act,change) 
+    {
+        const win = act.meta_window;
+        if (win.window_type !== Meta.WindowType.NORMAL)
+            return;
+        if (win.is_always_on_all_workspaces())
+            return;
+        if (change === Meta.SizeChange.MAXIMIZE)
+            {
+            this.placeOnWorkspace(win);
+            }
+        else if (change  === Meta.SizeChange.FULLSCREEN)
+            {
+            this.placeOnWorkspace(win);
+            }
+        else if (change === Meta.SizeChange.UNMAXIMIZE)
+            {
+            this.backto(win);
+            }
+        else if (change === Meta.SizeChange.UNFULLSCREEN)
+            {
+            if (win.get_maximized() !== Meta.MaximizeFlags.BOTH)
+                {
+                this.backto(win);
+                }
+            }
+    }
+    
     enable() {
         // Trigger new window with maximize size and if the window is maximized
-        _handles.push(global.window_manager.connect('map', (_, act) => {this.check(act,false,false);}));
-        _handles.push(global.window_manager.connect('destroy', (_, act) => {this.backto(act);}));
-        _handles.push(global.window_manager.connect('size-change', (_, act, change) => {
-            log("change "+ change);
-            if (change === Meta.SizeChange.MAXIMIZE)
-                {
-                log("MAXIMIZE");
-                this.check(act,false,false);
-                }
-            else if (change  === Meta.SizeChange.FULLSCREEN)
-                {
-                log("MAXIMIZE");
-                this.check(act,false,true);
-                }
-            else if (change === Meta.SizeChange.UNMAXIMIZE || change === Meta.SizeChange.UNFULLSCREEN)
-                {
-                log("UNMAXIMIZE");
-                this.backto(act);
-                }
-        }));
-   }
+        _handles.push(global.window_manager.connect('map', (_, act) => {this.window_manager_map(act);}));
+        _handles.push(global.window_manager.connect('destroy', (_, act) => {this.window_manager_destroy(act);}));
+        _handles.push(global.window_manager.connect('size-change', (_, act, change) => {this.window_manager_size_change(act,change);}));
+    }
 
     disable() {
         // remove array and disconect

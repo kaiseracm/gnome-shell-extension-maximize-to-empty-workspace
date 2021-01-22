@@ -205,7 +205,7 @@ class Extension {
         this.backto(win);
     }
 
-    window_manager_size_change(act,change) 
+    window_manager_size_change(act,change,rectold) 
     {
         const win = act.meta_window;
         if (win.window_type !== Meta.WindowType.NORMAL)
@@ -214,7 +214,10 @@ class Extension {
             return;
         if (change === Meta.SizeChange.MAXIMIZE)
             {
-            this.placeOnWorkspace(win);
+            if (win.get_maximized() === Meta.MaximizeFlags.BOTH)
+                {
+                this.placeOnWorkspace(win);
+                }
             }
         else if (change  === Meta.SizeChange.FULLSCREEN)
             {
@@ -222,7 +225,12 @@ class Extension {
             }
         else if (change === Meta.SizeChange.UNMAXIMIZE)
             {
-            this.backto(win);
+            // do nothing if it was only partially maximized
+            const rectmax=win.get_work_area_for_monitor(win.get_monitor());     
+            if (rectmax.equal(rectold))
+                {
+                this.backto(win);
+                }
             }
         else if (change === Meta.SizeChange.UNFULLSCREEN)
             {
@@ -237,7 +245,7 @@ class Extension {
         // Trigger new window with maximize size and if the window is maximized
         _handles.push(global.window_manager.connect('map', (_, act) => {this.window_manager_map(act);}));
         _handles.push(global.window_manager.connect('destroy', (_, act) => {this.window_manager_destroy(act);}));
-        _handles.push(global.window_manager.connect('size-change', (_, act, change) => {this.window_manager_size_change(act,change);}));
+        _handles.push(global.window_manager.connect('size-change', (_, act, change,rectold) => {this.window_manager_size_change(act,change,rectold);}));
     }
 
     disable() {

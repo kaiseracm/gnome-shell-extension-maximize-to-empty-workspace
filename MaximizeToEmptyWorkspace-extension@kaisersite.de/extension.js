@@ -22,6 +22,7 @@ const Gio = imports.gi.Gio;
 
 const _handles = [];
 
+const _windowids_maximized = {};
 
 class Extension {
  
@@ -99,6 +100,8 @@ class Extension {
                         // move the other windows to their old places
                         wList.forEach( w => {w.change_workspace_by_index(current, false);});
                         }
+                    // remember reordered window
+                    _windowids_maximized[win.get_id()] = "reorder";
                     }
                 else if (current>firstfree)
                     {
@@ -107,6 +110,8 @@ class Extension {
                     manager.reorder_workspace(manager.get_workspace_by_index(firstfree+1),current);
                     // move the other windows to their old places
                     wList.forEach( w => {w.change_workspace_by_index(current, false);});
+                    // remember reordered window
+                    _windowids_maximized[win.get_id()] = "reorder";
                     }
                 }
             else
@@ -127,6 +132,8 @@ class Extension {
                     // move the other windows to their old places
                     wListcurrent.forEach( w => {w.change_workspace_by_index(current, false);});
                     wListfirstfree.forEach( w => {w.change_workspace_by_index(firstfree, false);});
+                    // remember reordered window
+                    _windowids_maximized[win.get_id()] = "reorder";
                     }
                 else if (current>firstfree)
                     {
@@ -135,6 +142,8 @@ class Extension {
                     // move the other windows to their old places
                     wListcurrent.forEach( w => {w.change_workspace_by_index(current, false);});
                     wListfirstfree.forEach( w => {w.change_workspace_by_index(firstfree, false);});
+                    // remember reordered window
+                    _windowids_maximized[win.get_id()] = "reorder";
                     }
                 }
             }
@@ -145,6 +154,15 @@ class Extension {
 
         // Idea: don't move the coresponding window to an other workspace (it may be not fully active yet)
         // Reorder the workspaces and move all other window
+        
+        if (!(win.get_id() in _windowids_maximized))
+            {
+            // no new screen is used in the past: do nothing
+            return;
+            }
+        
+        // this is not longer maximized
+        delete _windowids_maximized[win.get_id()];
 
         const mMonitor=win.get_monitor();
         const wList = win.get_workspace().list_windows().filter(w => w!==win && !w.is_always_on_all_workspaces() && w.get_monitor()==mMonitor);

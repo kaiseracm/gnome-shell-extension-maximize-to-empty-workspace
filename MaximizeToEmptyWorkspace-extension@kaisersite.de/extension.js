@@ -28,7 +28,6 @@ const _windowids_size_change = {};
 class Extension {
  
     constructor() {
-      this._mutterSettings = new Gio.Settings({ schema_id: 'org.gnome.mutter' });
     }
     
     // First free workspace on the specified monitor
@@ -323,6 +322,7 @@ class Extension {
     }
 
     enable() {
+        this._mutterSettings = new Gio.Settings({ schema_id: 'org.gnome.mutter' });
         // Trigger new window with maximize size and if the window is maximized
         _handles.push(global.window_manager.connect('minimize', (_, act) => {this.window_manager_minimize(act);}));
         _handles.push(global.window_manager.connect('unminimize', (_, act) => {this.window_manager_unminimize(act);}));
@@ -336,6 +336,8 @@ class Extension {
     disable() {
         // remove array and disconect
         _handles.splice(0).forEach(h => global.window_manager.disconnect(h));
+        
+        this._mutterSettings = null;
     }
 }
 

@@ -17,6 +17,8 @@
  */
 const Meta = imports.gi.Meta;
 const Gio = imports.gi.Gio;
+// https://gjs.guide/extensions/topics/extension-utils.html#extension-metadata
+const ExtensionUtils = imports.misc.extensionUtils;
 //  _mutterSettings.get_boolean('workspaces-only-on-primary');
 //  _mutterSettings.get_boolean('dynamic-workspaces');
 
@@ -242,7 +244,7 @@ class Extension {
             return;
         if (win.is_always_on_all_workspaces())
             return;
-        if (change === Meta.SizeChange.MAXIMIZE)
+        if (this.settings.get_boolean("move-window-when-maximized") && (change === Meta.SizeChange.MAXIMIZE))
             {
             //global.log("achim","Meta.SizeChange.MAXIMIZE");
             if (win.get_maximized() === Meta.MaximizeFlags.BOTH)
@@ -323,6 +325,7 @@ class Extension {
 
     enable() {
         this._mutterSettings = new Gio.Settings({ schema_id: 'org.gnome.mutter' });
+        this.settings = ExtensionUtils.getSettings();
         // Trigger new window with maximize size and if the window is maximized
         _handles.push(global.window_manager.connect('minimize', (_, act) => {this.window_manager_minimize(act);}));
         _handles.push(global.window_manager.connect('unminimize', (_, act) => {this.window_manager_unminimize(act);}));

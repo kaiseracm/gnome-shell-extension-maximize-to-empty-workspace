@@ -1,8 +1,10 @@
 #!/bin/sh
 
 NAME=fullscreen-to-empty-workspace@aiono.dev
-cd $NAME
+DIR=src
+cd $DIR
 zip -r $NAME.zip *
-mv $NAME.zip ../..
+mkdir ../build
+mv $NAME.zip ../build/$NAME.zip
 cd ..
 

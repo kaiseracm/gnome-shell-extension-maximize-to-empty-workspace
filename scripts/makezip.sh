@@ -2,7 +2,9 @@
 
 NAME=fullscreen-to-empty-workspace@aiono.dev
 DIR=src
-zip -r $NAME.zip $DIR/*
+pushd $DIR
+zip -r $NAME.zip *
+popd
 mkdir -p build
-mv $NAME.zip build/$NAME.zip
+mv $DIR/$NAME.zip build/$NAME.zip
 

@@ -337,10 +337,12 @@ class Extension {
     }
 
     disable() {
-        // remove array and disconect
-        _handles.splice(0).forEach(h => global.window_manager.disconnect(h));
-        
         this._mutterSettings = null;
+        this.settings = null;
+
+        // remove array and disconnect
+        const handles_to_disconnect = _handles.splice(0);
+        handles_to_disconnect.forEach(h => global.window_manager.disconnect(h));
     }
 }
 

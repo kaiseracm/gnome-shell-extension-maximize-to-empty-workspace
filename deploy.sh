@@ -1,5 +1,5 @@
 #!/bin/sh
 
-NAME=MaximizeToEmptyWorkspace-extension@kaisersite.de
+NAME=fullscreen-to-empty-workspace@aiono.dev
 rm -rf ~/.local/share/gnome-shell/extensions/$NAME
 cp -r $NAME ~/.local/share/gnome-shell/extensions/.

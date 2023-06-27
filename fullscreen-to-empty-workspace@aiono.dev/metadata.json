@@ -1,0 +1,11 @@
+{
+  "name": "Fullscreen to Empty Workspace",
+  "description": "New, maximized and fullscreen windows will be moved to empty workspaces. The extension provides options to configure what types of windows should be moved. Supports multiple monitors.",
+  "url":"https://github.com/onsah/fullscreen-to-new-workspace",
+  "uuid": "fullscreen-to-empty-workspace@aiono.dev",
+  "shell-version": [
+    "3.38", "40", "41", "42", "43", "44"
+  ],
+  "version": 13,
+  "settings-schema": "org.gnome.shell.extensions.fullscreen-to-empty-workspace"
+}

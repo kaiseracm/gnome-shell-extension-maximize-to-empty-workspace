@@ -1,6 +1,6 @@
 #!/bin/sh
 
-NAME=MaximizeToEmptyWorkspace-extension@kaisersite.de
+NAME=fullscreen-to-empty-workspace@aiono.dev
 cd $NAME
 zip -r $NAME.zip *
 mv $NAME.zip ../..

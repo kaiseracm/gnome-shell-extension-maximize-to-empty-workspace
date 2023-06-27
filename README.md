@@ -1,5 +1,6 @@
-# gnome-shell-extension-maximize-to-empty-workspace
-New and maximized windows will be moved to empty workspaces. Supports multiple monitors.
+# Fullscreen to Empty Workspacee
+New, maximized and fullscreen windows will be moved to empty workspaces. The extension provides options to configure what types of windows should be moved. Supports multiple monitors.
 
-Maximize To Empty Workspace is based on [Maximize To Workspace With History](https://github.com/raonetwo/MaximizeToWorkspace)
+## Credits
+Forked from https://github.com/kaiseracm/gnome-shell-extension-maximize-to-empty-workspace
 

@@ -217,14 +217,20 @@ class Extension {
     window_manager_map(act)
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_map "+win.get_id());
-        if (win.window_type !== Meta.WindowType.NORMAL)
-            return;
-        if (win.get_maximized() !== Meta.MaximizeFlags.BOTH)
-            return;
-        if (win.is_always_on_all_workspaces())
-            return;
-        this.placeOnWorkspace(win);
+        const should_place_on_new_workspace = 
+            (this.settings.get_boolean("move-window-when-maximized") ?
+                // This is also true for fullscreen windows as well as maximized windows  
+                win.get_maximized() === Meta.MaximizeFlags.BOTH :
+                win.fullscreen
+            ) && (
+                win.window_type === Meta.WindowType.NORMAL
+            ) && (
+                !win.is_always_on_all_workspaces() 
+            )
+            
+        if (should_place_on_new_workspace) {
+            this.placeOnWorkspace(win);
+        }
     }
     
     window_manager_destroy(act)
@@ -294,14 +300,19 @@ class Extension {
     window_manager_unminimize(act)
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_umminimize");
-        if (win.window_type !== Meta.WindowType.NORMAL)
-            return;
-        if (win.get_maximized() !== Meta.MaximizeFlags.BOTH)
-            return;
-        if (win.is_always_on_all_workspaces())
-            return;
-        this.placeOnWorkspace(win);
+        const should_place_on_new_workspace = 
+            (this.settings.get_boolean("move-window-when-maximized") ?
+                // This is also true for fullscreen windows as well as maximized windows  
+                win.get_maximized() === Meta.MaximizeFlags.BOTH :
+                win.fullscreen
+            ) && (
+                win.window_type === Meta.WindowType.NORMAL
+            ) && (
+                !win.is_always_on_all_workspaces() 
+            )
+        if (should_place_on_new_workspace) {
+            this.placeOnWorkspace(win);
+        }
     }
     
     window_manager_size_changed(act)

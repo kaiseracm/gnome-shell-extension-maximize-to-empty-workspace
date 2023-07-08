@@ -217,18 +217,7 @@ class Extension {
     window_manager_map(act)
     {
         const win = act.meta_window;
-        const should_place_on_new_workspace = 
-            (this.settings.get_boolean("move-window-when-maximized") ?
-                // This is also true for fullscreen windows as well as maximized windows  
-                win.get_maximized() === Meta.MaximizeFlags.BOTH :
-                win.fullscreen
-            ) && (
-                win.window_type === Meta.WindowType.NORMAL
-            ) && (
-                !win.is_always_on_all_workspaces() 
-            )
-            
-        if (should_place_on_new_workspace) {
+        if (this.shouldPlaceOnNewWorkspaceWin(win)) {
             this.placeOnWorkspace(win);
         }
     }
@@ -236,81 +225,35 @@ class Extension {
     window_manager_destroy(act)
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_destroy");
-        if (win.window_type !== Meta.WindowType.NORMAL)
+        if (!this.isNormalWindow(win)) {
             return;
+        }
         this.backto(win);
     }
 
     window_manager_size_change(act,change,rectold) 
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_size_change "+win.get_id());
-        if (win.window_type !== Meta.WindowType.NORMAL)
-            return;
-        if (win.is_always_on_all_workspaces())
-            return;
-        if (this.settings.get_boolean("move-window-when-maximized") && (change === Meta.SizeChange.MAXIMIZE))
-            {
-            //global.log("achim","Meta.SizeChange.MAXIMIZE");
-            if (win.get_maximized() === Meta.MaximizeFlags.BOTH)
-                {
-                //global.log("achim","=== Meta.MaximizeFlags.BOTH");
-                _windowids_size_change[win.get_id()]="place";
-                }
-            }
-        else if (change  === Meta.SizeChange.FULLSCREEN)
-            {
-            //global.log("achim","Meta.SizeChange.FULLSCREEN");
-                _windowids_size_change[win.get_id()]="place";
-            }
-        else if (change === Meta.SizeChange.UNMAXIMIZE)
-            {
-            //global.log("achim","Meta.SizeChange.UNMAXIMIZE");
-            // do nothing if it was only partially maximized
-            const rectmax=win.get_work_area_for_monitor(win.get_monitor());     
-            if (rectmax.equal(rectold))
-                {
-                //global.log("achim","rectmax matches");
-                _windowids_size_change[win.get_id()]="back";
-                }
-            }
-        else if (change === Meta.SizeChange.UNFULLSCREEN)
-            {
-            //global.log("achim","change === Meta.SizeChange.UNFULLSCREEN");
-            if (win.get_maximized() !== Meta.MaximizeFlags.BOTH)
-                {
-                //global.log("achim","!== Meta.MaximizeFlags.BOTH");
-                _windowids_size_change[win.get_id()]="back";
-                }
-            }
+        if (this.shouldPlaceOnNewWorkspaceChange(win, change)) {
+            this.setToBePlaced(win);
+        } else if (this.shouldPlaceBackToOldWorkspaceChange(win, change, rectold)) {
+            this.setToBePlacedBack(win);
+        }
     }
 
     window_manager_minimize(act)
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_minimize");
-        if (win.window_type !== Meta.WindowType.NORMAL)
+        if (!this.isNormalWindow(win)) {
             return;
-        if (win.is_always_on_all_workspaces())
-            return;
+        }
         this.backto(win);
     }
 
     window_manager_unminimize(act)
     {
         const win = act.meta_window;
-        const should_place_on_new_workspace = 
-            (this.settings.get_boolean("move-window-when-maximized") ?
-                // This is also true for fullscreen windows as well as maximized windows  
-                win.get_maximized() === Meta.MaximizeFlags.BOTH :
-                win.fullscreen
-            ) && (
-                win.window_type === Meta.WindowType.NORMAL
-            ) && (
-                !win.is_always_on_all_workspaces() 
-            )
-        if (should_place_on_new_workspace) {
+        if (this.shouldPlaceOnNewWorkspaceWin(win)) {
             this.placeOnWorkspace(win);
         }
     }
@@ -320,9 +263,9 @@ class Extension {
         const win = act.meta_window;
         //global.log("achim","window_manager_size_changed "+win.get_id());
         if (win.get_id() in _windowids_size_change) {
-            if (_windowids_size_change[win.get_id()]=="place") {                
+            if (this.isToBePlaced(win)) {                
                 this.placeOnWorkspace(win);
-            } else if (_windowids_size_change[win.get_id()]=="back") {                
+            } else if (this.isToBePlacedBack(win)) {                
                 this.backto(win);
             }
             delete _windowids_size_change[win.get_id()];
@@ -332,6 +275,63 @@ class Extension {
     window_manager_switch_workspace()
     {
         //global.log("achim","window_manager_switch_workspace");
+    }
+
+    isNormalWindow(win) {
+        return (win.window_type === Meta.WindowType.NORMAL) && 
+            !win.is_always_on_all_workspaces();
+    }
+
+    shouldPlaceOnNewWorkspaceWin(win) {
+        return this.isNormalWindow(win) && (
+            this.isMaximizeEnabled() ?
+                // This is also true for fullscreen windows as well as maximized windows  
+                win.get_maximized() === Meta.MaximizeFlags.BOTH :
+                win.fullscreen
+        );
+    }
+
+    shouldPlaceOnNewWorkspaceChange(win, change) {
+        return this.isNormalWindow(win) && (
+            (this.isMaximizeEnabled() && 
+                (change === Meta.SizeChange.MAXIMIZE) && 
+                (win.get_maximized() === Meta.MaximizeFlags.BOTH)) ||
+            (change === Meta.SizeChange.FULLSCREEN)
+        );
+    }
+
+    shouldPlaceBackToOldWorkspaceChange(win, change, rectold) {
+        const rectmax=win.get_work_area_for_monitor(win.get_monitor());
+        return this.isNormalWindow(win) && (
+            (this.isMaximizeEnabled() && 
+                (change === Meta.SizeChange.UNMAXIMIZE) &&
+                    // do nothing if it was only partially maximized
+                    rectmax.equal(rectold)) ||
+            ((change === Meta.SizeChange.UNFULLSCREEN) && 
+                (this.isMaximizeEnabled() ? 
+                    (win.get_maximized() !== Meta.MaximizeFlags.BOTH) :
+                    true))
+        );
+    }
+
+    isMaximizeEnabled() {
+        return this.settings.get_boolean("move-window-when-maximized");
+    }
+
+    setToBePlaced(window) {
+        _windowids_size_change[window.get_id()]="place";
+    }
+
+    isToBePlaced(window) {
+        return _windowids_size_change[window.get_id()]=="place";
+    }
+
+    setToBePlacedBack(window) {
+        _windowids_size_change[window.get_id()]="back";
+    }
+
+    isToBePlacedBack(window) {
+        return _windowids_size_change[window.get_id()]=="back";
     }
 
     enable() {

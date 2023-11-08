@@ -4,7 +4,7 @@
   "url":"https://github.com/kaiseracm/gnome-shell-extension-maximize-to-empty-workspace",
   "uuid": "MaximizeToEmptyWorkspace-extension@kaisersite.de",
   "shell-version": [
-    "3.38", "40", "41", "42", "43", "44"
+    "45"
   ],
-  "version": 13
+  "version": 14
 }

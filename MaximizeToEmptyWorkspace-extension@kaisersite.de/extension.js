@@ -15,8 +15,8 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
-const Meta = imports.gi.Meta;
-const Gio = imports.gi.Gio;
+import Meta from 'gi://Meta';
+import Gio from 'gi://Gio';
 //  _mutterSettings.get_boolean('workspaces-only-on-primary');
 //  _mutterSettings.get_boolean('dynamic-workspaces');
 
@@ -25,7 +25,7 @@ const _handles = [];
 const _windowids_maximized = {};
 const _windowids_size_change = {};
 
-class Extension {
+export default class Extension {
  
     constructor() {
     }
@@ -61,7 +61,7 @@ class Extension {
     }
     
     placeOnWorkspace(win) {
-        //global.log("achim","placeOnWorkspace:"+win.get_id());
+        //console.log("achim","placeOnWorkspace:"+win.get_id());
         // bMap true - new windows to end of workspaces
         const bMap = false;
 
@@ -158,7 +158,7 @@ class Extension {
     // back to last workspace
     backto(win) {
 
-        //global.log("achim","backto "+win.get_id());
+        //console.log("achim","backto "+win.get_id());
         
         // Idea: don't move the coresponding window to an other workspace (it may be not fully active yet)
         // Reorder the workspaces and move all other window
@@ -215,7 +215,7 @@ class Extension {
     window_manager_map(act)
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_map "+win.get_id());
+        //console.log("achim","window_manager_map "+win.get_id());
         if (win.window_type !== Meta.WindowType.NORMAL)
             return;
         if (win.get_maximized() !== Meta.MaximizeFlags.BOTH)
@@ -228,7 +228,7 @@ class Extension {
     window_manager_destroy(act)
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_destroy");
+        //console.log("achim","window_manager_destroy");
         if (win.window_type !== Meta.WindowType.NORMAL)
             return;
         this.backto(win);
@@ -237,42 +237,42 @@ class Extension {
     window_manager_size_change(act,change,rectold) 
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_size_change "+win.get_id());
+        //console.log("achim","window_manager_size_change "+win.get_id());
         if (win.window_type !== Meta.WindowType.NORMAL)
             return;
         if (win.is_always_on_all_workspaces())
             return;
         if (change === Meta.SizeChange.MAXIMIZE)
             {
-            //global.log("achim","Meta.SizeChange.MAXIMIZE");
+            //console.log("achim","Meta.SizeChange.MAXIMIZE");
             if (win.get_maximized() === Meta.MaximizeFlags.BOTH)
                 {
-                //global.log("achim","=== Meta.MaximizeFlags.BOTH");
+                //console.log("achim","=== Meta.MaximizeFlags.BOTH");
                 _windowids_size_change[win.get_id()]="place";
                 }
             }
         else if (change  === Meta.SizeChange.FULLSCREEN)
             {
-            //global.log("achim","Meta.SizeChange.FULLSCREEN");
+            //console.log("achim","Meta.SizeChange.FULLSCREEN");
                 _windowids_size_change[win.get_id()]="place";
             }
         else if (change === Meta.SizeChange.UNMAXIMIZE)
             {
-            //global.log("achim","Meta.SizeChange.UNMAXIMIZE");
+            //console.log("achim","Meta.SizeChange.UNMAXIMIZE");
             // do nothing if it was only partially maximized
             const rectmax=win.get_work_area_for_monitor(win.get_monitor());     
             if (rectmax.equal(rectold))
                 {
-                //global.log("achim","rectmax matches");
+                //console.log("achim","rectmax matches");
                 _windowids_size_change[win.get_id()]="back";
                 }
             }
         else if (change === Meta.SizeChange.UNFULLSCREEN)
             {
-            //global.log("achim","change === Meta.SizeChange.UNFULLSCREEN");
+            //console.log("achim","change === Meta.SizeChange.UNFULLSCREEN");
             if (win.get_maximized() !== Meta.MaximizeFlags.BOTH)
                 {
-                //global.log("achim","!== Meta.MaximizeFlags.BOTH");
+                //console.log("achim","!== Meta.MaximizeFlags.BOTH");
                 _windowids_size_change[win.get_id()]="back";
                 }
             }
@@ -281,7 +281,7 @@ class Extension {
     window_manager_minimize(act)
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_minimize");
+        //console.log("achim","window_manager_minimize");
         if (win.window_type !== Meta.WindowType.NORMAL)
             return;
         if (win.is_always_on_all_workspaces())
@@ -292,7 +292,7 @@ class Extension {
     window_manager_unminimize(act)
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_umminimize");
+        //console.log("achim","window_manager_umminimize");
         if (win.window_type !== Meta.WindowType.NORMAL)
             return;
         if (win.get_maximized() !== Meta.MaximizeFlags.BOTH)
@@ -305,7 +305,7 @@ class Extension {
     window_manager_size_changed(act)
     {
         const win = act.meta_window;
-        //global.log("achim","window_manager_size_changed "+win.get_id());
+        //console.log("achim","window_manager_size_changed "+win.get_id());
         if (win.get_id() in _windowids_size_change) {
             if (_windowids_size_change[win.get_id()]=="place") {                
                 this.placeOnWorkspace(win);
@@ -318,7 +318,7 @@ class Extension {
 
     window_manager_switch_workspace()
     {
-        //global.log("achim","window_manager_switch_workspace");
+        // console.log("achim","window_manager_switch_workspace");
     }
 
     enable() {
@@ -339,8 +339,4 @@ class Extension {
         
         this._mutterSettings = null;
     }
-}
-
-function init() {
-    return new Extension();
 }

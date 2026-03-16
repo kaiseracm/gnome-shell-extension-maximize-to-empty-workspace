@@ -5,7 +5,11 @@
   "uuid": "MaximizeToEmptyWorkspace-extension@kaisersite.de",
   "shell-version": [
     "45",
-    "46"
+    "46",
+    "47",
+    "48",
+    "49"
   ],
-  "version": 14
+  "version": 14,
+  "settings-schema": "org.gnome.shell.extensions.maximize-to-empty-workspace"
 }

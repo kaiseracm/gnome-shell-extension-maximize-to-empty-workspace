@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.maximize-to-empty-workspace"
+          path="/org/gnome/shell/extensions/maximize-to-empty-workspace/">
+    <key type="b" name="move-back-to-home">
+      <default>true</default>
+      <summary>Move back to home workspace</summary>
+      <description>When enabled, unmaximized windows will be moved back to workspace 1.</description>
+    </key>
+    <key type="b" name="cleanup-empty-workspace">
+      <default>true</default>
+      <summary>Clean up empty workspaces</summary>
+      <description>When enabled, empty workspaces left behind after moving a window back will be automatically removed.</description>
+    </key>
+  </schema>
+</schemalist>
